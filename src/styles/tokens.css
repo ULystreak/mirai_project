@@ -45,4 +45,39 @@
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-in: cubic-bezier(0.64, 0, 0.78, 0);
   }
+
+  /* Hierarquia de cores, do mais forte ao mais discreto:
+     1. --action: ação principal. Um botão sólido por tela.
+     2. --glow: foco, realces e seleção.
+     3. --revealed: o único tom quente. Marca "aguardando sua aprovação" e a arte pronta.
+     4. --success: concluído. --danger: recusado e atrasado.
+     5. --muted e --paper: texto secundário e principal. */
+  :root {
+    --success: oklch(78.5% 0.16 152);
+  }
+
+  /* Limites de CSS: sem oklch ou sem color-mix, o tema usa as mesmas cores em hex.
+     Suporte de referência: Chrome e Edge 111+, Safari 16.2+ e Firefox 113+. */
+  @supports not (color: oklch(50% 0.1 200)) {
+    :root {
+      --ground: #060b1e;
+      --surface: #0c1733;
+      --cyanotype: #143a7a;
+      --action: #2563eb;
+      --glow: #6fa8ff;
+      --paper: #e9f0ff;
+      --muted: #9ba8c7;
+      --revealed: #ffb86b;
+      --danger: #ff6b7a;
+      --success: #5fd49a;
+    }
+  }
+
+  @supports not (background: color-mix(in oklch, red, blue)) {
+    :root {
+      --surface-raised: #142550;
+      --line: rgb(233 240 255 / 0.12);
+      --line-strong: rgb(233 240 255 / 0.28);
+    }
+  }
 }

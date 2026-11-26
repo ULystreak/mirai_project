@@ -39,8 +39,9 @@
     box-shadow: 0 12px 28px -14px var(--action);
   }
 
+  /* Hover escurece: o texto branco continua com 4,5:1 ou mais. */
   .btn--primary:hover:not(:disabled) {
-    background: color-mix(in oklch, var(--action), white 12%);
+    background: color-mix(in oklch, var(--action), black 14%);
     box-shadow: 0 16px 32px -14px var(--action);
   }
 
@@ -51,6 +52,17 @@
   }
 
   .btn--ghost:hover:not(:disabled) {
+    border-color: var(--glow);
+  }
+
+  /* Ação de peso médio, entre o sólido e o contorno: para "Baixar" e os arquivos. */
+  .btn--soft {
+    border-color: var(--line-strong);
+    background: var(--surface-raised);
+    color: var(--paper);
+  }
+
+  .btn--soft:hover:not(:disabled) {
     border-color: var(--glow);
   }
 
@@ -209,7 +221,8 @@
   }
 
   .pill--done {
-    color: var(--muted);
+    background: color-mix(in oklch, var(--success), transparent 80%);
+    color: var(--success);
   }
 
   .pill--danger {

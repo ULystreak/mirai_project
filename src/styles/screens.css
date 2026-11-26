@@ -491,6 +491,26 @@
     min-width: 0;
   }
 
+  .art__nome {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .art__dia {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--glow);
+    font-size: var(--text-sm);
+  }
+
+  .art__acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-block-start: var(--s-1);
+  }
+
   .thumbs {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));

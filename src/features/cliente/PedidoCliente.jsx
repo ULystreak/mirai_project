@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { Download } from 'lucide-react';
+import { CalendarDays, Copy, Download, Share2 } from 'lucide-react';
 import { Arte, Button, Dialog, Empty, Field, StatusPill, useAcao, useNow, useToast } from '../../components/ui.jsx';
 import { Timeline } from '../../components/Timeline.jsx';
 import { Revelacao } from '../../components/Revelacao.jsx';
@@ -11,6 +11,11 @@ import { patchOrder, useStore } from '../../lib/store.js';
 import { zip } from '../../lib/zip.js';
 import { when } from '../../lib/format.js';
 import { countdown, formatDays, formatHours } from '../../lib/time.js';
+import { compartilharArquivo, copiarTexto, legendaCompleta } from '../../lib/share.js';
+
+// Dia sugerido por extenso, por exemplo "quinta-feira, 26 de novembro".
+const diaPorExtenso = (iso) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
 
 // Acompanhamento do cliente: etapa atual, previsão, linha do tempo e entregas.
 export function PedidoCliente() {
@@ -19,6 +24,7 @@ export function PedidoCliente() {
   const order = useStore((s) => s.orders.find((o) => o.id === id));
   const now = useNow();
   const acao = useAcao();
+  const toast = useToast();
   const [ajustando, setAjustando] = useState(false);
   const primeiraUrl = useBlobUrl(order?.materials[0]?.blobKey);
 
@@ -43,12 +49,49 @@ export function PedidoCliente() {
     'Tudo entregue';
 
   const aprovar = () => acao(() => patchOrder(order.id, (o) => approveOrder(o)), 'Entrega aprovada. Pedido concluído.');
-  const baixar = async (d) => downloadBlob(await getBlob(d.blobKey), d.name);
+
+  const baixar = async (d) => {
+    try {
+      downloadBlob(await getBlob(d.blobKey), d.name);
+    } catch {
+      toast('Não encontrei esta arte neste navegador.', 'error');
+    }
+  };
+
   const baixarTudo = async () => {
     const files = await Promise.all(
       order.deliveries.map(async (d) => ({ name: d.name, data: new Uint8Array(await (await getBlob(d.blobKey)).arrayBuffer()) })),
     );
     downloadBlob(zip(files), `${order.business.name}-artes.zip`);
+  };
+
+  const copiarLegenda = async (d) => {
+    const ok = await copiarTexto(legendaCompleta(d));
+    toast(
+      ok ? 'Legenda e hashtags copiadas. Cole no seu post.' : 'Não consegui copiar. Selecione o texto e copie manualmente.',
+      ok ? 'ok' : 'error',
+    );
+  };
+
+  // Abre a folha de compartilhamento do sistema. Sem ela, baixa a arte e copia a legenda.
+  const compartilhar = async (d) => {
+    let blob;
+    try {
+      blob = await getBlob(d.blobKey);
+    } catch {
+      toast('Não encontrei esta arte neste navegador.', 'error');
+      return;
+    }
+    const file = new File([blob], d.name, { type: blob.type });
+    const texto = legendaCompleta(d);
+    const resultado = await compartilharArquivo({ file, title: d.name, text: texto });
+    if (resultado === 'ok' || resultado === 'cancelado') return;
+    downloadBlob(blob, d.name);
+    const copiou = await copiarTexto(texto);
+    toast(
+      copiou ? 'Este navegador não compartilha arquivos. Baixamos a arte e copiamos a legenda.' : 'Baixamos a arte. Não consegui copiar a legenda.',
+      copiou ? 'ok' : 'error',
+    );
   };
 
   return (
@@ -98,23 +141,36 @@ export function PedidoCliente() {
               <div className="section__head">
                 <h2 id="artes">Suas artes</h2>
                 {order.deliveries.length > 1 && (
-                  <Button variant="ghost" onClick={baixarTudo}>
+                  <Button variant="soft" onClick={baixarTudo}>
                     <Download size={18} aria-hidden="true" /> Baixar tudo (.zip)
                   </Button>
                 )}
               </div>
+              <p className="muted">Baixe a arte, copie a legenda e poste no seu perfil. Também dá para compartilhar direto pelo celular.</p>
               <ul className="arts">
                 {order.deliveries.map((d) => (
                   <li key={d.id} className="art">
                     <Arte blobKey={d.blobKey} alt={d.name} />
                     <div className="art__body">
-                      <p>{d.name}</p>
+                      <p className="art__nome">{d.name}</p>
                       {d.caption && <p>{d.caption}</p>}
                       {d.hashtags && <p className="muted">{d.hashtags}</p>}
-                      {d.suggestedDate && <p className="muted num">Sugestão de postagem: {d.suggestedDate}</p>}
-                      <Button variant="ghost" onClick={() => baixar(d)}>
-                        <Download size={18} aria-hidden="true" /> Baixar
-                      </Button>
+                      {d.suggestedDate && (
+                        <p className="art__dia">
+                          <CalendarDays size={16} aria-hidden="true" /> Sugerido para postar em {diaPorExtenso(d.suggestedDate)}
+                        </p>
+                      )}
+                      <div className="art__acoes">
+                        <Button variant="soft" onClick={() => baixar(d)}>
+                          <Download size={18} aria-hidden="true" /> Baixar arte
+                        </Button>
+                        <Button variant="ghost" onClick={() => copiarLegenda(d)} disabled={!d.caption && !d.hashtags}>
+                          <Copy size={18} aria-hidden="true" /> Copiar legenda
+                        </Button>
+                        <Button variant="ghost" onClick={() => compartilhar(d)}>
+                          <Share2 size={18} aria-hidden="true" /> Compartilhar
+                        </Button>
+                      </div>
                     </div>
                   </li>
                 ))}

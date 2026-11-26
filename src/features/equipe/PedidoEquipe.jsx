@@ -223,10 +223,20 @@ export function PedidoEquipe() {
                   <li key={d.id} className="art">
                     <Arte blobKey={d.blobKey} alt={d.name} />
                     <div className="art__body">
-                      <p>{d.name}</p>
+                      <p className="art__nome">{d.name}</p>
                       {d.caption && <p>{d.caption}</p>}
                       {d.hashtags && <p className="muted">{d.hashtags}</p>}
-                      {d.suggestedDate && <p className="muted num">Sugestão de postagem: {d.suggestedDate}</p>}
+                      {d.suggestedDate && (
+                        <p className="art__dia">
+                          Sugerido para postar em{' '}
+                          {new Date(`${d.suggestedDate}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}
+                        </p>
+                      )}
+                      <div className="art__acoes">
+                        <Button variant="soft" onClick={() => baixarArquivo(d.blobKey, d.name)}>
+                          <Download size={18} aria-hidden="true" /> Baixar arte
+                        </Button>
+                      </div>
                     </div>
                   </li>
                 ))}
