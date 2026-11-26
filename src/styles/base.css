@@ -102,7 +102,7 @@
 
   .skip-link {
     position: absolute;
-    top: -4rem;
+    top: var(--s-4);
     left: var(--s-4);
     z-index: 100;
     padding: var(--s-2) var(--s-4);
@@ -111,11 +111,13 @@
     color: #fff;
     font-weight: 600;
     text-decoration: none;
-    transition: top 200ms var(--ease-out);
+    /* Escondido acima da tela. Só transform anima; top é propriedade de layout. */
+    transform: translateY(calc(-100% - var(--s-4)));
+    transition: transform 200ms var(--ease-out);
   }
 
   .skip-link:focus {
-    top: var(--s-4);
+    transform: translateY(0);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -123,9 +125,17 @@
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-delay: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+
+    /* Revelação ao rolar e cascata das listas: sem movimento, o conteúdo já aparece pronto. */
+    .section,
+    .orders > *,
+    .queue > * {
+      animation: none !important;
     }
   }
 }

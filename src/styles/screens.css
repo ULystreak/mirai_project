@@ -20,6 +20,7 @@
       linear-gradient(180deg, var(--cyanotype), var(--ground) 94%);
   }
 
+  /* Assinatura do produto: o fundo se revela devagar de propósito (2,6 s, só opacidade). */
   .entrada__field::after {
     content: '';
     position: absolute;
@@ -97,7 +98,7 @@
       radial-gradient(45% 55% at 76% 24%, color-mix(in oklch, var(--revealed), transparent 62%), transparent 72%),
       linear-gradient(150deg, var(--cyanotype), var(--action) 75%);
     opacity: 0.42;
-    transition: opacity 900ms var(--ease-out);
+    transition: opacity 400ms var(--ease-out);
   }
 
   .chapa:hover .chapa__art,

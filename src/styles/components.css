@@ -231,7 +231,7 @@
     height: 100%;
     transform-origin: 0 50%;
     transform: scaleX(var(--v, 0));
-    transition: transform 900ms var(--ease-out);
+    transition: transform 400ms var(--ease-out);
     border-radius: inherit;
     background: linear-gradient(90deg, var(--action), var(--glow));
   }
@@ -285,6 +285,14 @@
     background: var(--surface);
     color: var(--paper);
     box-shadow: var(--shadow);
+    /* Fechado: transparente. display e overlay usam allow-discrete para a caixa continuar na tela durante a saída. */
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    transition:
+      opacity 180ms var(--ease-in),
+      transform 180ms var(--ease-in),
+      display 180ms allow-discrete,
+      overlay 180ms allow-discrete;
   }
 
   .dialog--wide {
@@ -295,8 +303,19 @@
     background: oklch(6% 0.04 265 / 0.72);
   }
 
+  /* Aberto: a entrada usa ease-out e 280 ms. A saída, ease-in e 180 ms. */
   .dialog[open] {
-    animation: dialog-in 280ms var(--ease-out);
+    opacity: 1;
+    transform: none;
+    transition-duration: 280ms;
+    transition-timing-function: var(--ease-out);
+  }
+
+  @starting-style {
+    .dialog[open] {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
   }
 
   @keyframes dialog-in {
@@ -350,6 +369,11 @@
     animation: toast-in 240ms var(--ease-out);
   }
 
+  /* Saída: começa 150 ms antes de o toast ser removido (ver ToastProvider). */
+  .toast[data-saindo] {
+    animation: toast-out 150ms var(--ease-in) forwards;
+  }
+
   .toast--error {
     border-color: color-mix(in oklch, var(--danger), transparent 40%);
   }
@@ -358,6 +382,13 @@
     from {
       opacity: 0;
       transform: translateY(12px);
+    }
+  }
+
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      transform: translateY(6px);
     }
   }
 
@@ -448,6 +479,7 @@
     mix-blend-mode: multiply;
   }
 
+  /* Assinatura do produto: a cor volta devagar (1,1 s) em cada etapa concluída. Não encurtar sem decisão. */
   .rev__color {
     z-index: 2;
     transition: opacity 1100ms var(--ease-out);
@@ -530,7 +562,7 @@
     width: 2px;
     transform-origin: 50% 0;
     transform: scaleY(var(--done, 0));
-    transition: transform 700ms var(--ease-out);
+    transition: transform 400ms var(--ease-out);
     background: linear-gradient(var(--action), var(--glow));
   }
 
@@ -702,6 +734,67 @@
     from {
       opacity: 0;
       transform: translateY(10px);
+    }
+  }
+
+  /* Entrada dos chapas: cascata de 40 ms por item, em todos os navegadores. */
+  .chapas > * {
+    animation: item-in 320ms var(--ease-out) backwards;
+  }
+
+  .chapas > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+
+  /* Sem animações ligadas ao scroll: as listas entram em cascata ao carregar, até o sexto item. */
+  @supports not (animation-timeline: view()) {
+    .orders > *,
+    .queue > * {
+      animation: item-in 320ms var(--ease-out) backwards;
+    }
+
+    .orders > :nth-child(2),
+    .queue > :nth-child(2) {
+      animation-delay: 40ms;
+    }
+
+    .orders > :nth-child(3),
+    .queue > :nth-child(3) {
+      animation-delay: 80ms;
+    }
+
+    .orders > :nth-child(4),
+    .queue > :nth-child(4) {
+      animation-delay: 120ms;
+    }
+
+    .orders > :nth-child(5),
+    .queue > :nth-child(5) {
+      animation-delay: 160ms;
+    }
+
+    .orders > :nth-child(6),
+    .queue > :nth-child(6) {
+      animation-delay: 200ms;
+    }
+  }
+
+  /* Revelação ao rolar: cada item de lista e cada seção sobe ao entrar na tela.
+     Acima da dobra, o conteúdo já aparece pronto. */
+  @supports (animation-timeline: view()) {
+    .orders > *,
+    .queue > *,
+    .section {
+      animation: item-in var(--ease-out) backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 50%;
+    }
+  }
+
+  @keyframes item-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
     }
   }
 }
