@@ -737,41 +737,58 @@
     }
   }
 
-  /* Entrada em cascata: cada item sobe 40 ms depois do anterior, até o sexto. Só opacity e transform. */
-  .orders > *,
-  .queue > *,
+  /* Entrada dos chapas: cascata de 40 ms por item, em todos os navegadores. */
   .chapas > * {
     animation: item-in 320ms var(--ease-out) backwards;
   }
 
-  .orders > :nth-child(2),
-  .queue > :nth-child(2),
   .chapas > :nth-child(2) {
     animation-delay: 40ms;
   }
 
-  .orders > :nth-child(3),
-  .queue > :nth-child(3),
-  .chapas > :nth-child(3) {
-    animation-delay: 80ms;
+  /* Sem animações ligadas ao scroll: as listas entram em cascata ao carregar, até o sexto item. */
+  @supports not (animation-timeline: view()) {
+    .orders > *,
+    .queue > * {
+      animation: item-in 320ms var(--ease-out) backwards;
+    }
+
+    .orders > :nth-child(2),
+    .queue > :nth-child(2) {
+      animation-delay: 40ms;
+    }
+
+    .orders > :nth-child(3),
+    .queue > :nth-child(3) {
+      animation-delay: 80ms;
+    }
+
+    .orders > :nth-child(4),
+    .queue > :nth-child(4) {
+      animation-delay: 120ms;
+    }
+
+    .orders > :nth-child(5),
+    .queue > :nth-child(5) {
+      animation-delay: 160ms;
+    }
+
+    .orders > :nth-child(6),
+    .queue > :nth-child(6) {
+      animation-delay: 200ms;
+    }
   }
 
-  .orders > :nth-child(4),
-  .queue > :nth-child(4),
-  .chapas > :nth-child(4) {
-    animation-delay: 120ms;
-  }
-
-  .orders > :nth-child(5),
-  .queue > :nth-child(5),
-  .chapas > :nth-child(5) {
-    animation-delay: 160ms;
-  }
-
-  .orders > :nth-child(6),
-  .queue > :nth-child(6),
-  .chapas > :nth-child(6) {
-    animation-delay: 200ms;
+  /* Revelação ao rolar: cada item de lista e cada seção sobe ao entrar na tela.
+     Acima da dobra, o conteúdo já aparece pronto. */
+  @supports (animation-timeline: view()) {
+    .orders > *,
+    .queue > *,
+    .section {
+      animation: item-in var(--ease-out) backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 50%;
+    }
   }
 
   @keyframes item-in {
