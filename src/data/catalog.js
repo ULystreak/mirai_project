@@ -8,7 +8,7 @@ export const PACKAGES = [
 // `hours` devolve as horas úteis de trabalho da etapa, dado o número de posts.
 export const STAGES = [
   { key: 'recebido', label: 'Pedido recebido', message: 'Recebemos o seu briefing e os materiais.', hours: () => 0 },
-  { key: 'aceito', label: 'Aceitamos o seu projeto', message: 'Um parceiro da equipe assumiu o seu pedido.', hours: () => 4 },
+  { key: 'aceito', label: 'Aceitamos o seu projeto', message: 'Um parceiro da equipe vai assumir o seu pedido.', hours: () => 4 },
   { key: 'edicao', label: 'Editando as imagens', message: 'Recorte, cor e ajustes em cada arte.', hours: (n) => 2 * n },
   { key: 'legendas', label: 'Criando as legendas', message: 'Textos e hashtags no tom da sua marca.', hours: (n) => 0.5 * n },
   { key: 'revisao', label: 'Revisão final', message: 'Conferimos cada post antes da entrega.', hours: () => 2 },

@@ -78,7 +78,7 @@ export function Fila() {
                     {o.postsTotal} posts · {o.packageName} · {responsavel ?? 'sem responsável'}
                   </span>
                   <span className={cx('queue__deadline', isLate(c, now) && 'is-late')}>
-                    {c?.deadline ? `${c.label}: ${when(c.deadline)} · ${countdown(c.deadline, now)}` : 'Aguardando aceite'}
+                    {c?.deadline ? `${c.key === 'aceito' ? 'Aceite até' : c.label}: ${when(c.deadline)} · ${countdown(c.deadline, now)}` : 'Aguardando aceite'}
                   </span>
                 </Link>
               </li>

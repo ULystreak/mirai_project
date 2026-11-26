@@ -25,6 +25,18 @@
     font-size: var(--text-sm);
   }
 
+  /* Chapas em composição escalonada, como cópias numa bandeja, e não uma grade de cards. */
+  @media (min-width: 760px) {
+    .chapas {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .chapa:nth-child(2) {
+      margin-block-start: var(--s-12);
+    }
+  }
+
   .dialog--wide .arte {
     aspect-ratio: 4 / 5;
     width: auto;

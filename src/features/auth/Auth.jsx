@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
 import { Bar, Button, Dialog, Field, useToast } from '../../components/ui.jsx';
 import { Logo } from '../../components/Logo.jsx';
-import { logInCliente, logInEquipe, requestReset, resetPassword, signUpCliente } from '../../lib/auth.js';
+import { logInCliente, logInEquipe, requestReset, resetPassword, sessaoAtiva, signUpCliente } from '../../lib/auth.js';
 import { useStore } from '../../lib/store.js';
 
 function AuthPage({ title, lead, children }) {
@@ -107,12 +107,13 @@ function RecuperarSenha({ open, onClose }) {
 
 export function LoginCliente() {
   const session = useStore((s) => s.session);
+  const ativa = useStore(sessaoAtiva);
   const navigate = useNavigate();
   const toast = useToast();
   const [erro, setErro] = useState('');
   const [ocupado, setOcupado] = useState(false);
   const [esqueci, setEsqueci] = useState(false);
-  if (session?.kind === 'cliente') return <Navigate to="/cliente" replace />;
+  if (ativa && session?.kind === 'cliente') return <Navigate to="/cliente" replace />;
 
   async function entrar(e) {
     e.preventDefault();
@@ -159,11 +160,12 @@ const forca = (pw) =>
 
 export function CadastroCliente() {
   const session = useStore((s) => s.session);
+  const ativa = useStore(sessaoAtiva);
   const navigate = useNavigate();
   const [dados, setDados] = useState({ name: '', businessName: '', email: '', password: '', termos: false });
   const [erros, setErros] = useState({});
   const [ocupado, setOcupado] = useState(false);
-  if (session?.kind === 'cliente') return <Navigate to="/cliente" replace />;
+  if (ativa && session?.kind === 'cliente') return <Navigate to="/cliente" replace />;
 
   const campo = (chave) => (e) => setDados((d) => ({ ...d, [chave]: e.target.value }));
   const pontos = forca(dados.password);
@@ -194,7 +196,7 @@ export function CadastroCliente() {
         <Field label="Seu nome" name="name" autoComplete="name" value={dados.name} onChange={campo('name')} error={erros.name} />
         <Field label="Nome do negócio" name="businessName" autoComplete="organization" value={dados.businessName} onChange={campo('businessName')} error={erros.businessName} />
         <Field label="E-mail" name="email" type="email" autoComplete="email" value={dados.email} onChange={campo('email')} error={erros.email} />
-        <Field label="Senha" name="password" type="password" autoComplete="new-password" value={dados.password} onChange={campo('password')} error={erros.password} hint="Pelo menos 8 caracteres." />
+        <Senha label="Senha" name="password" autoComplete="new-password" value={dados.password} onChange={campo('password')} error={erros.password} hint="Pelo menos 8 caracteres." />
         <div className="strength" aria-live="polite">
           <Bar value={pontos / 5} label="Força da senha" />
           <span>{dados.password ? FORCAS[Math.min(pontos, 4)] : 'Digite uma senha para ver a força.'}</span>
@@ -216,10 +218,11 @@ export function CadastroCliente() {
 // Equipe: sem cadastro. O acesso é criado pelo administrador.
 export function LoginEquipe() {
   const session = useStore((s) => s.session);
+  const ativa = useStore(sessaoAtiva);
   const navigate = useNavigate();
   const [erro, setErro] = useState('');
   const [ocupado, setOcupado] = useState(false);
-  if (session?.kind === 'equipe') return <Navigate to={session.id === 'admin' ? '/admin' : '/equipe'} replace />;
+  if (ativa && session?.kind === 'equipe') return <Navigate to={session.id === 'admin' ? '/admin' : '/equipe'} replace />;
 
   async function entrar(e) {
     e.preventDefault();

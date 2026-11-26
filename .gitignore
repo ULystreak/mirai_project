@@ -3,6 +3,7 @@ node_modules/
 dist/
 
 # Saídas de teste
+output/
 playwright-report/
 test-results/
 coverage/

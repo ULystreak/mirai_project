@@ -37,6 +37,10 @@ export function PedidoCliente() {
   const previsao = eta(order);
   const ativo = st === 'novo' || st === 'producao';
   const restante = remainingHours(order);
+  const titulo =
+    { concluido: 'Pedido concluído', recusado: 'Pedido recusado', novo: 'Pedido em análise', aguardando: 'Entrega pronta para aprovar' }[st] ??
+    cur?.label ??
+    'Tudo entregue';
 
   const aprovar = () => {
     try {
@@ -60,9 +64,9 @@ export function PedidoCliente() {
         <Revelacao src={primeiraUrl} progress={progress(order)} className="order-hero__art" label="Arte do pedido, revelada conforme o progresso" />
         <div className="order-hero__body">
           <StatusPill status={st} label={STATUS[st]} />
-          <h1>{st === 'concluido' ? 'Pedido concluído' : cur ? cur.label : 'Tudo entregue'}</h1>
+          <h1>{titulo}</h1>
           {st === 'recusado' && <p className="form-error">Motivo: {order.rejectionReason}</p>}
-          {ativo && cur && <p className="lead">{cur.message}</p>}
+          {ativo && <p className="lead">{st === 'novo' ? 'Recebemos o seu briefing e os materiais. Em breve um parceiro aceita o projeto.' : cur?.message}</p>}
           {st === 'aguardando' && <p className="lead">Suas artes estão prontas. Confira, baixe e aprove, ou peça um ajuste.</p>}
           {ativo && previsao && (
             <dl className="kv">

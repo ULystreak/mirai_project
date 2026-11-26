@@ -3,7 +3,7 @@ import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router
 import { AppShell } from './components/Shell.jsx';
 import { ToastProvider } from './components/ui.jsx';
 import { Logo } from './components/Logo.jsx';
-import { currentUser } from './lib/auth.js';
+import { currentUser, sessaoAtiva } from './lib/auth.js';
 import { useStore } from './lib/store.js';
 
 // Cada tela carrega só quando é aberta.
@@ -23,10 +23,11 @@ const Admin = page(() => import('./features/admin/Admin.jsx'), 'Admin');
 // Protege as áreas por papel. Sem sessão do papel certo, manda para o login daquele papel.
 function Guard({ kind }) {
   const session = useStore((s) => s.session);
+  const ativa = useStore(sessaoAtiva);
   const user = useStore(currentUser);
   const { pathname } = useLocation();
   const login = kind === 'cliente' ? '/cliente/entrar' : '/equipe/entrar';
-  if (!session || (kind === 'cliente') !== (session.kind === 'cliente')) {
+  if (!session || !ativa || (kind === 'cliente') !== (session.kind === 'cliente')) {
     return <Navigate to={login} replace state={{ from: pathname }} />;
   }
   if (kind === 'admin' && !user?.admin) return <Navigate to="/equipe" replace />;

@@ -250,7 +250,7 @@ export function PedidoEquipe() {
             <h2 id="historico">Histórico</h2>
             <ul className="history">
               {[...order.events].reverse().map((e) => (
-                <li key={`${e.at}-${e.text}`}>
+                <li key={order.events.indexOf(e)}>
                   <span>{e.text}</span>
                   <small className="muted num">{when(e.at)}</small>
                 </li>
@@ -318,7 +318,7 @@ function NovaEntrega({ onAdicionar }) {
       <Field type="date" label="Sugestão de postagem" value={texto.suggestedDate} onChange={(e) => setTexto({ ...texto, suggestedDate: e.target.value })} />
       <label className="btn btn--ghost file-btn">
         <Upload size={18} aria-hidden="true" /> {enviando ? 'Enviando…' : 'Escolher artes'}
-        <input type="file" accept="image/*" multiple disabled={enviando} onChange={receber} />
+        <input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={enviando} onChange={receber} />
       </label>
     </div>
   );

@@ -35,6 +35,12 @@ export function currentUser(s = getState()) {
   return list.find((u) => u.id === s.session.id) ?? null;
 }
 
+// Sessão válida: há um usuário e, se for da equipe, o acesso continua ativo.
+export const sessaoAtiva = (s = getState()) => {
+  const u = currentUser(s);
+  return !!u && (s.session.kind === 'cliente' || u.active !== false);
+};
+
 export async function signUpCliente({ name, email, password, businessName }) {
   if (password.length < 8) fail('A senha precisa ter pelo menos 8 caracteres.');
   if (getState().clients.some((c) => norm(c.email) === norm(email))) fail('Já existe uma conta com este e-mail. Entre com a sua senha.');

@@ -31,9 +31,14 @@ const MAX_BYTES = 10 * 1024 * 1024;
 
 // Reduz a imagem para no máximo 2048 px e devolve o blob pronto para guardar.
 export async function prepareImage(file) {
-  if (!file.type.startsWith('image/')) throw new Error(`${file.name} não é uma imagem.`);
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error(`${file.name}: use uma imagem JPG, PNG ou WebP.`);
   if (file.size > MAX_BYTES) throw new Error(`${file.name} passa de 10 MB.`);
-  const bmp = await createImageBitmap(file);
+  let bmp;
+  try {
+    bmp = await createImageBitmap(file);
+  } catch {
+    throw new Error(`Não consegui abrir ${file.name}. Confira se o arquivo não está corrompido.`);
+  }
   const k = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));
   const width = Math.round(bmp.width * k);
   const height = Math.round(bmp.height * k);

@@ -19,7 +19,7 @@ export function OrderCard({ order, to, now }) {
       <div className="order-card__body">
         <StatusPill status={st} label={STATUS[st]} />
         <h2 className="order-card__name">{order.business.name}</h2>
-        <p className="order-card__stage">{cur ? cur.label : 'Tudo entregue'}</p>
+        <p className="order-card__stage">{st === 'novo' ? 'Pedido em análise' : cur ? cur.label : 'Tudo entregue'}</p>
         <Bar value={progress(order)} label="Progresso do pedido" />
         {ativo && e && <p className="order-card__eta num">Previsão: {when(e)} · {countdown(e, now)}</p>}
       </div>

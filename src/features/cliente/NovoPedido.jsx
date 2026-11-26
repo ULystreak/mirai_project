@@ -305,7 +305,7 @@ function PassoMateriais({ materiais, erro, adicionar, remover }) {
           <Upload size={18} aria-hidden="true" /> Escolher arquivos
           <input
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             multiple
             onChange={(e) => {
               adicionar(e.target.files);

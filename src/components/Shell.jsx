@@ -44,7 +44,7 @@ export function AppShell() {
     () =>
       orders
         .filter((o) => !isCliente || o.clientId === user?.id)
-        .flatMap((o) => o.events.map((e) => ({ ...e, title: o.business.name })))
+        .flatMap((o) => o.events.map((e) => ({ ...e, title: o.business.name, orderId: o.id })))
         .sort((a, b) => b.at.localeCompare(a.at))
         .slice(0, 8),
     [orders, isCliente, user?.id],
@@ -95,7 +95,7 @@ export function AppShell() {
               {events.length ? (
                 <ul>
                   {events.map((e) => (
-                    <li key={`${e.at}-${e.text}`}>
+                    <li key={`${e.orderId}-${e.at}-${e.text}`}>
                       <span>{e.text}</span>
                       <small>
                         {e.title} · {when(e.at)}
