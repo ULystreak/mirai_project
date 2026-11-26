@@ -1,5 +1,4 @@
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
-import { AnimatePresence, animate, motion } from 'motion/react';
 import { X } from 'lucide-react';
 import { useBlobUrl } from '../lib/media.js';
 
@@ -76,51 +75,56 @@ export function ToastProvider({ children }) {
     <ToastCtx.Provider value={push}>
       {children}
       <div className="toasts" role="status" aria-live="polite">
-        <AnimatePresence initial={false}>
-          {items.map((t) => (
-            <motion.div
-              key={t.id}
-              className={cx('toast', t.tone === 'error' && 'toast--error')}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {t.text}
-            </motion.div>
-          ))}
-        </AnimatePresence>
+        {items.map((t) => (
+          <div key={t.id} className={cx('toast', t.tone === 'error' && 'toast--error')}>
+            {t.text}
+          </div>
+        ))}
       </div>
     </ToastCtx.Provider>
   );
 }
 
+// Roda uma ação e avisa o resultado: a mensagem de sucesso ou o erro.
+export function useAcao() {
+  const toast = useToast();
+  return (fn, sucesso) => {
+    try {
+      fn();
+      if (sucesso) toast(sucesso);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  };
+}
+
 export function Bar({ value, label }) {
   return (
     <div className="bar" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value * 100)}>
-      <motion.span
-        className="bar__fill"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: value }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      />
+      <span className="bar__fill" style={{ '--v': value }} />
     </div>
   );
 }
 
+// Contagem até `to`, desacelerando. Com "reduzir movimento", o valor aparece direto.
 export function CountUp({ to }) {
-  const ref = useRef(null);
+  const [valor, setValor] = useState(0);
   useEffect(() => {
-    const controls = animate(0, to, {
-      duration: 0.7,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (v) => {
-        if (ref.current) ref.current.textContent = Math.round(v);
-      },
-    });
-    return () => controls.stop();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setValor(to);
+      return undefined;
+    }
+    const inicio = performance.now();
+    let quadro;
+    const passo = (agora) => {
+      const p = Math.min(1, (agora - inicio) / 700);
+      setValor(Math.round(to * (1 - (1 - p) ** 3)));
+      if (p < 1) quadro = requestAnimationFrame(passo);
+    };
+    quadro = requestAnimationFrame(passo);
+    return () => cancelAnimationFrame(quadro);
   }, [to]);
-  return <span ref={ref} className="num">0</span>;
+  return <span className="num">{valor}</span>;
 }
 
 export function Tabs({ items, value, onChange, label }) {
@@ -128,9 +132,6 @@ export function Tabs({ items, value, onChange, label }) {
     <div className="tabs" role="group" aria-label={label}>
       {items.map((it) => (
         <button key={it.id} type="button" className="tab" aria-pressed={value === it.id} onClick={() => onChange(it.id)}>
-          {value === it.id && (
-            <motion.span layoutId="tab-ink" className="tab__ink" transition={{ type: 'spring', stiffness: 480, damping: 38 }} />
-          )}
           {it.label}
           <span className="tab__count num">{it.count}</span>
         </button>

@@ -4,6 +4,7 @@ dist/
 
 # Saídas de teste
 output/
+.playwright-cli/
 playwright-report/
 test-results/
 coverage/

@@ -1,27 +1,10 @@
 import { useMemo } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router';
-import { motion } from 'motion/react';
 import { Bell, ClipboardList, Inbox, LogOut, Plus, Users } from 'lucide-react';
 import { Logo } from './Logo.jsx';
 import { currentUser, logOut } from '../lib/auth.js';
 import { setState, useStore } from '../lib/store.js';
 import { when } from '../lib/format.js';
-
-// Uma transição curta a cada troca de rota. Só transform e opacity.
-function Page() {
-  const { pathname } = useLocation();
-  return (
-    <motion.div
-      key={pathname}
-      className="page-enter"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-    >
-      <Outlet />
-    </motion.div>
-  );
-}
 
 export function AppShell() {
   const user = useStore(currentUser);
@@ -29,6 +12,7 @@ export function AppShell() {
   const orders = useStore((s) => s.orders);
   const seenAt = useStore((s) => (user ? s.seen[user.id] : undefined));
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const items = isCliente
     ? [
@@ -75,7 +59,7 @@ export function AppShell() {
         </nav>
         <div className="shell__me">
           <p className="shell__name">{user?.name}</p>
-          <p className="shell__sub">{isCliente ? user?.businessName : user?.role}</p>
+          <p className="shell__sub">{isCliente ? user?.businessName : user?.admin ? 'Administrador' : 'Equipe'}</p>
           <button type="button" className="btn btn--ghost btn--block" onClick={leave}>
             <LogOut size={18} aria-hidden="true" /> Sair
           </button>
@@ -115,7 +99,9 @@ export function AppShell() {
       </header>
 
       <main id="main" className="shell__main" tabIndex={-1}>
-        <Page />
+        <div key={pathname} className="page-enter">
+          <Outlet />
+        </div>
       </main>
 
       <nav className="shell__bottom" aria-label="Principal, celular">

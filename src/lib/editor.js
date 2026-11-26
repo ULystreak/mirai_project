@@ -53,7 +53,7 @@ function wrap(ctx, text, maxW) {
 }
 
 // Escreve o texto centralizado em (x, y), frações da arte. Devolve a caixa ocupada, para arrastar.
-export function drawText(ctx, text, { size, color, family, pill, x, y }) {
+function drawText(ctx, text, { size, color, family, pill, x, y }) {
   const W = ctx.canvas.width;
   const H = ctx.canvas.height;
   const px = Math.round(size * W);

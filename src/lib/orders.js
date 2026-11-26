@@ -14,7 +14,6 @@ const fail = (msg) => {
   throw new Error(msg);
 };
 const find = (o, key) => o.stages.find((s) => s.key === key);
-const clone = (o) => structuredClone(o);
 const log = (o, text, now) => ({ ...o, events: [...o.events, { at: iso(now), text }], updatedAt: iso(now) });
 
 // Recalcula os prazos das etapas em aberto, a partir de `now`. Prazo editado à mão vira âncora.
@@ -86,7 +85,7 @@ export const remainingHours = (o) => o.stages.filter((s) => !s.doneAt).reduce((n
 
 export function acceptOrder(o, partnerId, now = new Date()) {
   if (orderStatus(o) !== 'novo') fail('Este pedido já foi aceito ou encerrado.');
-  const n = clone(o);
+  const n = structuredClone(o);
   find(n, 'aceito').doneAt = iso(now);
   n.assigneeId = partnerId;
   return log(schedule(n, now), 'Projeto aceito pela equipe.', now);
@@ -104,7 +103,7 @@ export function completeStage(o, now = new Date()) {
   if (orderStatus(o) !== 'producao' || !cur || cur.key === 'aceito' || cur.key === 'entrega') {
     fail('Esta etapa não pode ser concluída por aqui.');
   }
-  const n = clone(o);
+  const n = structuredClone(o);
   find(n, cur.key).doneAt = iso(now);
   return log(schedule(n, now), `Etapa concluída: ${cur.label}.`, now);
 }
@@ -114,7 +113,7 @@ export function setStageDeadline(o, key, isoDate, now = new Date()) {
   if (!stage || stage.doneAt) fail('Só dá para mudar o prazo de etapas em andamento.');
   const date = new Date(isoDate);
   if (Number.isNaN(date.getTime())) fail('Data inválida.');
-  const n = clone(o);
+  const n = structuredClone(o);
   Object.assign(find(n, key), { deadline: date.toISOString(), manual: true });
   return log(schedule(n, now), `Prazo de "${stage.label}" ajustado.`, now);
 }
@@ -123,7 +122,7 @@ export function requestAdjustment(o, note, now = new Date()) {
   if (orderStatus(o) !== 'aguardando') fail('Só dá para pedir ajuste depois da entrega.');
   const texto = note.trim();
   if (texto.length < 10) fail('Explique o ajuste com pelo menos 10 caracteres.');
-  const n = clone(o);
+  const n = structuredClone(o);
   for (const key of ['entrega', 'revisao', 'legendas', 'edicao']) find(n, key).doneAt = null;
   Object.assign(n, { deliveredAt: null, adjusting: true, adjustmentNote: texto });
   return log(schedule(n, now), `Cliente pediu ajuste: ${texto}`, now);
@@ -133,7 +132,7 @@ export function deliverOrder(o, now = new Date()) {
   if (orderStatus(o) !== 'producao') fail('Este pedido não está em produção.');
   if (currentStage(o)?.key !== 'entrega') fail('Conclua as etapas anteriores antes da entrega final.');
   if (!o.deliveries.length) fail('Envie pelo menos uma arte antes da entrega final.');
-  const n = clone(o);
+  const n = structuredClone(o);
   Object.assign(find(n, 'entrega'), { doneAt: iso(now) });
   Object.assign(n, { deliveredAt: iso(now), adjusting: false });
   return log(schedule(n, now), 'Entrega final enviada ao cliente.', now);

@@ -6,7 +6,7 @@ import { TEXT_FONTS } from '../../data/catalog.js';
 import { FORMATS, renderArt, toBlob } from '../../lib/editor.js';
 import { addDelivery } from '../../lib/orders.js';
 import { downloadBlob, getBlob, putBlob } from '../../lib/media.js';
-import { patchOrder, uid, useStore } from '../../lib/store.js';
+import { patchOrder, useStore } from '../../lib/store.js';
 
 const INICIAL = {
   format: '4:5',
@@ -168,11 +168,11 @@ export function Editor() {
     setSalvando(true);
     try {
       const { canvas, blob } = await arteFinal('image/png');
-      const blobKey = uid();
+      const blobKey = crypto.randomUUID();
       await putBlob(blobKey, blob);
       const base = material.name.replace(/\.[^.]+$/, '');
       const entrega = {
-        id: uid(),
+        id: crypto.randomUUID(),
         name: `${base}-editada.png`,
         blobKey,
         width: canvas.width,

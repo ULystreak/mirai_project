@@ -1,4 +1,4 @@
-import { getState, setState, uid } from './store.js';
+import { getState, setState } from './store.js';
 
 // ponytail: autenticação simulada. A senha vira hash SHA-256 no navegador; não é segurança de verdade.
 const enc = new TextEncoder();
@@ -14,7 +14,7 @@ export async function sha256(text) {
 }
 
 // ponytail: senha de demonstração no código, por pedido do projeto. Trocar antes de produção.
-export const ADMIN_USERNAME = 'mirai';
+const ADMIN_USERNAME = 'mirai';
 const ADMIN_PASSWORD = 'admin123';
 
 export async function ensureAdmin() {
@@ -24,7 +24,7 @@ export async function ensureAdmin() {
     ...s,
     partners: [
       ...s.partners,
-      { id: 'admin', name: 'Administrador', username: ADMIN_USERNAME, role: 'Administrador', passwordHash, active: true, admin: true, createdAt: now() },
+      { id: 'admin', name: 'Administrador', username: ADMIN_USERNAME, passwordHash, active: true, admin: true, createdAt: now() },
     ],
   }));
 }
@@ -45,7 +45,7 @@ export async function signUpCliente({ name, email, password, businessName }) {
   if (password.length < 8) fail('A senha precisa ter pelo menos 8 caracteres.');
   if (getState().clients.some((c) => norm(c.email) === norm(email))) fail('Já existe uma conta com este e-mail. Entre com a sua senha.');
   const client = {
-    id: uid(),
+    id: crypto.randomUUID(),
     name: name.trim(),
     email: email.trim(),
     businessName: businessName.trim(),
@@ -99,11 +99,11 @@ export function generatePassword() {
   return [...crypto.getRandomValues(new Uint8Array(10))].map((b) => chars[b % chars.length]).join('');
 }
 
-export async function createPartner({ name, username, role }) {
+export async function createPartner({ name, username }) {
   const user = norm(username);
   if (getState().partners.some((p) => norm(p.username) === user)) fail('Este usuário já existe. Escolha outro.');
   const password = generatePassword();
-  const partner = { id: uid(), name: name.trim(), username: user, role, passwordHash: await sha256(password), active: true, createdAt: now() };
+  const partner = { id: crypto.randomUUID(), name: name.trim(), username: user, passwordHash: await sha256(password), active: true, createdAt: now() };
   setState((s) => ({ ...s, partners: [...s.partners, partner] }));
   return { partner, password };
 }

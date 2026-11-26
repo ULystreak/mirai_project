@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Copy, Trash2 } from 'lucide-react';
-import { Button, Dialog, Empty, Field, StatusPill, useToast } from '../../components/ui.jsx';
-import { ROLES } from '../../data/catalog.js';
+import { Button, Dialog, Empty, Field, StatusPill, useAcao, useToast } from '../../components/ui.jsx';
 import { createPartner, deletePartner, resetPartnerPassword, setPartnerActive } from '../../lib/auth.js';
 import { STATUS, assignOrder, orderStatus } from '../../lib/orders.js';
 import { patchOrder, useStore } from '../../lib/store.js';
@@ -13,7 +12,8 @@ export function Admin() {
   const partners = useStore((s) => s.partners);
   const orders = useStore((s) => s.orders);
   const toast = useToast();
-  const [novo, setNovo] = useState({ name: '', username: '', role: ROLES[0] });
+  const acao = useAcao();
+  const [novo, setNovo] = useState({ name: '', username: '' });
   const [erros, setErros] = useState({});
   const [acesso, setAcesso] = useState(null);
   const [excluir, setExcluir] = useState(null);
@@ -32,7 +32,7 @@ export function Admin() {
     try {
       const { partner, password } = await createPartner(novo);
       setAcesso({ nome: partner.name, usuario: partner.username, senha: password });
-      setNovo({ name: '', username: '', role: ROLES[0] });
+      setNovo({ name: '', username: '' });
       toast(`Conta de ${partner.name} criada.`);
     } catch (ex) {
       setErros({ username: ex.message });
@@ -52,15 +52,6 @@ export function Admin() {
       toast('Senha copiada.');
     } catch {
       toast('Não foi possível copiar. Anote a senha.', 'error');
-    }
-  }
-
-  function tentar(fn, sucesso) {
-    try {
-      fn();
-      toast(sucesso);
-    } catch (err) {
-      toast(err.message, 'error');
     }
   }
 
@@ -88,11 +79,6 @@ export function Admin() {
         <form className="admin-form" onSubmit={criar} noValidate>
           <Field label="Nome" value={novo.name} onChange={(e) => setNovo({ ...novo, name: e.target.value })} error={erros.name} />
           <Field label="Usuário para entrar" autoComplete="off" value={novo.username} onChange={(e) => setNovo({ ...novo, username: e.target.value })} error={erros.username} />
-          <Field as="select" label="Função" value={novo.role} onChange={(e) => setNovo({ ...novo, role: e.target.value })}>
-            {ROLES.map((r) => (
-              <option key={r}>{r}</option>
-            ))}
-          </Field>
           <Button type="submit" loading={ocupado}>
             Criar conta
           </Button>
@@ -126,7 +112,6 @@ export function Admin() {
                 <tr>
                   <th scope="col">Nome</th>
                   <th scope="col">Usuário</th>
-                  <th scope="col">Função</th>
                   <th scope="col">Situação</th>
                   <th scope="col">
                     <span className="sr-only">Ações</span>
@@ -138,7 +123,6 @@ export function Admin() {
                   <tr key={p.id}>
                     <td>{p.name}</td>
                     <td className="num">{p.username}</td>
-                    <td>{p.role}</td>
                     <td>
                       <StatusPill status={p.active ? 'producao' : 'recusado'} label={p.active ? 'Ativo' : 'Desativado'} />
                     </td>
@@ -147,7 +131,7 @@ export function Admin() {
                         <Button
                           variant="ghost"
                           type="button"
-                          onClick={() => tentar(() => setPartnerActive(p.id, !p.active), p.active ? 'Acesso desativado.' : 'Acesso reativado.')}
+                          onClick={() => acao(() => setPartnerActive(p.id, !p.active), p.active ? 'Acesso desativado.' : 'Acesso reativado.')}
                         >
                           {p.active ? 'Desativar' : 'Ativar'}
                         </Button>

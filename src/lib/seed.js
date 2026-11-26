@@ -1,10 +1,10 @@
 import { PACKAGES, POST_TYPES } from '../data/catalog.js';
 import { acceptOrder, completeStage, createOrder } from './orders.js';
 import { putBlob } from './media.js';
-import { setState, uid } from './store.js';
+import { setState } from './store.js';
 
 // Arte de exemplo gerada em código. Não é foto real e aparece rotulada como exemplo.
-export async function sampleArt(label, [h1, h2]) {
+async function sampleArt(label, [h1, h2]) {
   await document.fonts.load('700 120px "Bricolage Grotesque Variable"');
   const canvas = Object.assign(document.createElement('canvas'), { width: 1080, height: 1350 });
   const ctx = canvas.getContext('2d');
@@ -35,21 +35,21 @@ export async function addSampleOrders() {
   const clients = [];
   const orders = [];
   for (const sp of specs) {
-    const clientId = uid();
+    const clientId = crypto.randomUUID();
     const materials = [];
     for (const part of ['logo', 'produto']) {
-      const blobKey = uid();
+      const blobKey = crypto.randomUUID();
       await putBlob(blobKey, await sampleArt(`${sp.business.split(' ')[0]} · ${part}`, sp.hues));
-      materials.push({ id: uid(), name: `exemplo-${part}.png`, type: 'image/png', blobKey, width: 1080, height: 1350, createdAt: now.toISOString() });
+      materials.push({ id: crypto.randomUUID(), name: `exemplo-${part}.png`, type: 'image/png', blobKey, width: 1080, height: 1350, createdAt: now.toISOString() });
     }
     const posts = Array.from({ length: sp.pkg.posts }, (_, i) => ({
-      id: uid(),
+      id: crypto.randomUUID(),
       type: POST_TYPES[i % POST_TYPES.length],
       brief: 'Post de exemplo: destaque do produto da semana.',
     }));
     let order = createOrder(
       {
-        id: uid(),
+        id: crypto.randomUUID(),
         clientId,
         business: { name: sp.business, segment: 'Alimentação', city: 'São Paulo', whatsapp: '(11) 90000-0000', instagram: '@exemplo', site: '', hours: 'Terça a domingo, 8h às 19h' },
         identity: { colors: ['#143A7A'], styles: ['Moderno'], tone: 'Acolhedor e direto', keywords: 'pão artesanal, mel', avoid: 'promoções agressivas' },
