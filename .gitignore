@@ -1,0 +1,23 @@
+# Dependências e build
+node_modules/
+dist/
+
+# Saídas de teste
+playwright-report/
+test-results/
+coverage/
+
+# Arquivos locais do impeccable
+.impeccable/config.local.json
+.impeccable/review/
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Sistema e editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
