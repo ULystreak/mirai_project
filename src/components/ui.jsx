@@ -39,24 +39,30 @@ const TONE = {
 };
 export const StatusPill = ({ status, label }) => <span className={cx('pill', TONE[status])}>{label}</span>;
 
-// Diálogo nativo: foco preso e Esc já vêm de graça. O conteúdo só existe enquanto está aberto.
+// Diálogo nativo: foco preso e Esc já vêm de graça. Na saída, o último conteúdo aberto continua
+// na caixa até ela sumir, para ela não aparecer vazia enquanto fecha.
 export function Dialog({ open, onClose, title, className, children }) {
   const ref = useRef(null);
   const titleId = useId();
+  const ultimo = useRef({ title, children });
+  useEffect(() => {
+    if (open) ultimo.current = { title, children };
+  });
   useEffect(() => {
     const d = ref.current;
     if (open && !d.open) d.showModal();
     if (!open && d.open) d.close();
   }, [open]);
+  const mostrado = open ? { title, children } : ultimo.current;
   return (
     <dialog ref={ref} className={cx('dialog', className)} aria-labelledby={titleId} onClose={onClose}>
       <div className="dialog__head">
-        <h2 id={titleId}>{title}</h2>
+        <h2 id={titleId}>{mostrado.title}</h2>
         <button type="button" className="icon-btn" aria-label="Fechar" onClick={() => ref.current.close()}>
           <X size={18} aria-hidden="true" />
         </button>
       </div>
-      {open && children}
+      {mostrado.children}
     </dialog>
   );
 }
@@ -69,6 +75,8 @@ export function ToastProvider({ children }) {
   const push = useCallback((text, tone = 'ok') => {
     const id = crypto.randomUUID();
     setItems((xs) => [...xs, { id, text, tone }]);
+    // Aos 4,05 s o toast começa a sair (150 ms, em CSS). Aos 4,2 s ele é removido.
+    setTimeout(() => setItems((xs) => xs.map((x) => (x.id === id ? { ...x, saindo: true } : x))), 4050);
     setTimeout(() => setItems((xs) => xs.filter((x) => x.id !== id)), 4200);
   }, []);
   return (
@@ -76,7 +84,11 @@ export function ToastProvider({ children }) {
       {children}
       <div className="toasts" role="status" aria-live="polite">
         {items.map((t) => (
-          <div key={t.id} className={cx('toast', t.tone === 'error' && 'toast--error')}>
+          <div
+            key={t.id}
+            className={cx('toast', t.tone === 'error' && 'toast--error')}
+            data-saindo={t.saindo || undefined}
+          >
             {t.text}
           </div>
         ))}
