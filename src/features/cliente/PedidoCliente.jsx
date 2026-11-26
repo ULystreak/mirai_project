@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { Download } from 'lucide-react';
-import { Arte, Button, Dialog, Empty, Field, StatusPill, useNow, useToast } from '../../components/ui.jsx';
+import { Arte, Button, Dialog, Empty, Field, StatusPill, useAcao, useNow, useToast } from '../../components/ui.jsx';
 import { Timeline } from '../../components/Timeline.jsx';
 import { Revelacao } from '../../components/Revelacao.jsx';
 import { currentUser } from '../../lib/auth.js';
@@ -18,7 +18,7 @@ export function PedidoCliente() {
   const user = useStore(currentUser);
   const order = useStore((s) => s.orders.find((o) => o.id === id));
   const now = useNow();
-  const toast = useToast();
+  const acao = useAcao();
   const [ajustando, setAjustando] = useState(false);
   const primeiraUrl = useBlobUrl(order?.materials[0]?.blobKey);
 
@@ -42,14 +42,7 @@ export function PedidoCliente() {
     cur?.label ??
     'Tudo entregue';
 
-  const aprovar = () => {
-    try {
-      patchOrder(order.id, (o) => approveOrder(o));
-      toast('Entrega aprovada. Pedido concluído.');
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  };
+  const aprovar = () => acao(() => patchOrder(order.id, (o) => approveOrder(o)), 'Entrega aprovada. Pedido concluído.');
   const baixar = async (d) => downloadBlob(await getBlob(d.blobKey), d.name);
   const baixarTudo = async () => {
     const files = await Promise.all(

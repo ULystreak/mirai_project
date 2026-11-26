@@ -30,7 +30,6 @@ const subscribe = (fn) => {
   return () => listeners.delete(fn);
 };
 
-export const uid = () => crypto.randomUUID();
 export const getState = () => state;
 
 export function setState(updater) {

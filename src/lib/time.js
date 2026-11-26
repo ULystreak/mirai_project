@@ -1,7 +1,7 @@
 // Horas úteis: seg a sex, 9h às 18h. ponytail: fuso do navegador e sem feriados.
-export const DAY_START = 9;
-export const DAY_END = 18;
-export const HOURS_PER_DAY = DAY_END - DAY_START;
+const DAY_START = 9;
+const DAY_END = 18;
+const HOURS_PER_DAY = DAY_END - DAY_START;
 
 const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
 

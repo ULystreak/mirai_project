@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { Download, Pencil, Upload } from 'lucide-react';
-import { Arte, Button, Dialog, Empty, Field, StatusPill, useNow, useToast } from '../../components/ui.jsx';
+import { Arte, Button, Dialog, Empty, Field, StatusPill, useAcao, useNow, useToast } from '../../components/ui.jsx';
 import { Timeline } from '../../components/Timeline.jsx';
 import { Revelacao } from '../../components/Revelacao.jsx';
 import { currentUser } from '../../lib/auth.js';
@@ -21,7 +21,7 @@ import {
   setStageDeadline,
 } from '../../lib/orders.js';
 import { downloadBlob, getBlob, prepareImage, putBlob, useBlobUrl } from '../../lib/media.js';
-import { patchOrder, uid, useStore } from '../../lib/store.js';
+import { patchOrder, useStore } from '../../lib/store.js';
 import { fromLocalInput, toLocalInput, when } from '../../lib/format.js';
 import { countdown, formatDays, formatHours } from '../../lib/time.js';
 
@@ -34,7 +34,7 @@ export function PedidoEquipe() {
   const order = useStore((s) => s.orders.find((o) => o.id === id));
   const partners = useStore((s) => s.partners);
   const now = useNow();
-  const toast = useToast();
+  const acao = useAcao();
   const [recusando, setRecusando] = useState(false);
   const [ampliado, setAmpliado] = useState(null);
   const primeiraUrl = useBlobUrl(order?.materials[0]?.blobKey);
@@ -60,14 +60,7 @@ export function PedidoEquipe() {
   const b = order.business;
   const idn = order.identity;
 
-  const rodar = (fn, sucesso) => {
-    try {
-      patchOrder(order.id, fn);
-      if (sucesso) toast(sucesso);
-    } catch (err) {
-      toast(err.message, 'error');
-    }
-  };
+  const rodar = (fn, sucesso) => acao(() => patchOrder(order.id, fn), sucesso);
 
   return (
     <section className="page">
@@ -300,9 +293,9 @@ function NovaEntrega({ onAdicionar }) {
     for (const file of arquivos) {
       try {
         const { blob, width, height } = await prepareImage(file);
-        const blobKey = uid();
+        const blobKey = crypto.randomUUID();
         await putBlob(blobKey, blob);
-        onAdicionar({ id: uid(), name: file.name, blobKey, width, height, ...texto });
+        onAdicionar({ id: crypto.randomUUID(), name: file.name, blobKey, width, height, ...texto });
       } catch (err) {
         toast(err.message, 'error');
       }

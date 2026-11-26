@@ -7,7 +7,7 @@ import { currentUser } from '../../lib/auth.js';
 import { money } from '../../lib/format.js';
 import { createOrder } from '../../lib/orders.js';
 import { delBlob, prepareImage, putBlob } from '../../lib/media.js';
-import { setState, uid, useStore } from '../../lib/store.js';
+import { setState, useStore } from '../../lib/store.js';
 import { formatDays, formatHours } from '../../lib/time.js';
 
 const STEPS = ['Negócio', 'Identidade', 'Pacote e posts', 'Materiais', 'Revisão'];
@@ -75,9 +75,9 @@ export function NovoPedido() {
     for (const file of Array.from(lista ?? [])) {
       try {
         const { blob, width, height } = await prepareImage(file);
-        const blobKey = uid();
+        const blobKey = crypto.randomUUID();
         await putBlob(blobKey, blob);
-        set((d) => ({ ...d, materials: [...d.materials, { id: uid(), name: file.name, blobKey, width, height }] }));
+        set((d) => ({ ...d, materials: [...d.materials, { id: crypto.randomUUID(), name: file.name, blobKey, width, height }] }));
       } catch (err) {
         toast(err.message, 'error');
       }
@@ -111,12 +111,12 @@ export function NovoPedido() {
     setEnviando(true);
     try {
       const order = createOrder({
-        id: uid(),
+        id: crypto.randomUUID(),
         clientId: user.id,
         business: { ...draft.business },
         identity: { ...draft.identity },
         pkg,
-        posts: draft.posts.map((p) => ({ id: uid(), ...p })),
+        posts: draft.posts.map((p) => ({ id: crypto.randomUUID(), ...p })),
         materials: draft.materials.map((m) => ({ ...m })),
         dueWanted: draft.dueWanted ? new Date(`${draft.dueWanted}T18:00:00`).toISOString() : null,
       });

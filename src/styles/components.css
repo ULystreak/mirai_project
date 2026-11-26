@@ -230,11 +230,13 @@
     width: 100%;
     height: 100%;
     transform-origin: 0 50%;
+    transform: scaleX(var(--v, 0));
+    transition: transform 900ms var(--ease-out);
     border-radius: inherit;
     background: linear-gradient(90deg, var(--action), var(--glow));
   }
 
-  /* Abas com indicador deslizante */
+  /* Abas */
   .tabs {
     display: inline-flex;
     flex-wrap: wrap;
@@ -246,8 +248,6 @@
   }
 
   .tab {
-    position: relative;
-    isolation: isolate;
     display: inline-flex;
     align-items: center;
     gap: var(--s-2);
@@ -259,19 +259,12 @@
     color: var(--muted);
     font-weight: 600;
     cursor: pointer;
+    transition: background-color 220ms var(--ease-out), color 220ms var(--ease-out);
   }
 
   .tab[aria-pressed='true'] {
-    color: var(--paper);
-  }
-
-  .tab__ink {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
     background: var(--surface-raised);
-    box-shadow: 0 1px 0 var(--line), 0 10px 24px -14px oklch(4% 0.05 265 / 0.95);
+    color: var(--paper);
   }
 
   .tab__count {
@@ -354,10 +347,18 @@
     box-shadow: var(--shadow);
     font-size: var(--text-sm);
     pointer-events: auto;
+    animation: toast-in 240ms var(--ease-out);
   }
 
   .toast--error {
     border-color: color-mix(in oklch, var(--danger), transparent 40%);
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
   }
 
   @media (min-width: 1024px) {
@@ -528,6 +529,8 @@
     bottom: 0;
     width: 2px;
     transform-origin: 50% 0;
+    transform: scaleY(var(--done, 0));
+    transition: transform 700ms var(--ease-out);
     background: linear-gradient(var(--action), var(--glow));
   }
 
@@ -688,5 +691,17 @@
   .bell__panel small {
     font-size: var(--text-sm);
     color: var(--muted);
+  }
+
+  /* Troca de tela: um fade curto e subida suave */
+  .page-enter {
+    animation: page-in 320ms var(--ease-out);
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
   }
 }

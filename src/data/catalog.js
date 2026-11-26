@@ -20,7 +20,6 @@ export const estimateHours = (posts) => STAGES.reduce((total, s) => total + s.ho
 export const POST_TYPES = ['Promoção', 'Produto', 'Bastidores', 'Depoimento', 'Data especial'];
 export const SEGMENTS = ['Alimentação', 'Moda', 'Beleza', 'Serviços', 'Saúde', 'Educação', 'Varejo', 'Outro'];
 export const STYLES = ['Moderno', 'Elegante', 'Divertido', 'Minimalista', 'Clássico', 'Ousado'];
-export const ROLES = ['Editor(a)', 'Redator(a)', 'Revisor(a)'];
 export const TEXT_FONTS = [
   { id: 'display', label: 'Bricolage Grotesque', family: '"Bricolage Grotesque Variable", sans-serif' },
   { id: 'texto', label: 'Inter', family: '"Inter Variable", sans-serif' },
