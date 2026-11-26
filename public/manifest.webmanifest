@@ -1,0 +1,10 @@
+{
+  "name": "Mirai",
+  "short_name": "Mirai",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060B1E",
+  "theme_color": "#060B1E",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

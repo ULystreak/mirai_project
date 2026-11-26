@@ -1,0 +1,168 @@
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
+import { AnimatePresence, animate, motion } from 'motion/react';
+import { X } from 'lucide-react';
+import { useBlobUrl } from '../lib/media.js';
+
+export const cx = (...names) => names.filter(Boolean).join(' ');
+
+export function Button({ variant = 'primary', loading = false, className, children, ...props }) {
+  return (
+    <button {...props} className={cx('btn', `btn--${variant}`, className)} disabled={loading || props.disabled} aria-busy={loading || undefined}>
+      {children}
+    </button>
+  );
+}
+
+export function Field({ label, hint, error, as: Tag = 'input', id, ...rest }) {
+  const auto = useId();
+  const fid = id ?? auto;
+  return (
+    <div className="field">
+      <label htmlFor={fid}>{label}</label>
+      <Tag
+        id={fid}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={cx(hint && `${fid}-hint`, error && `${fid}-err`) || undefined}
+        {...rest}
+      />
+      {hint && <p id={`${fid}-hint`} className="field__hint">{hint}</p>}
+      {error && <p id={`${fid}-err`} className="field__error">{error}</p>}
+    </div>
+  );
+}
+
+const TONE = {
+  novo: 'pill--new',
+  producao: 'pill--work',
+  aguardando: 'pill--gold',
+  concluido: 'pill--done',
+  recusado: 'pill--danger',
+};
+export const StatusPill = ({ status, label }) => <span className={cx('pill', TONE[status])}>{label}</span>;
+
+// Diálogo nativo: foco preso e Esc já vêm de graça. O conteúdo só existe enquanto está aberto.
+export function Dialog({ open, onClose, title, className, children }) {
+  const ref = useRef(null);
+  const titleId = useId();
+  useEffect(() => {
+    const d = ref.current;
+    if (open && !d.open) d.showModal();
+    if (!open && d.open) d.close();
+  }, [open]);
+  return (
+    <dialog ref={ref} className={cx('dialog', className)} aria-labelledby={titleId} onClose={onClose}>
+      <div className="dialog__head">
+        <h2 id={titleId}>{title}</h2>
+        <button type="button" className="icon-btn" aria-label="Fechar" onClick={() => ref.current.close()}>
+          <X size={18} aria-hidden="true" />
+        </button>
+      </div>
+      {open && children}
+    </dialog>
+  );
+}
+
+const ToastCtx = createContext(() => {});
+export const useToast = () => useContext(ToastCtx);
+
+export function ToastProvider({ children }) {
+  const [items, setItems] = useState([]);
+  const push = useCallback((text, tone = 'ok') => {
+    const id = crypto.randomUUID();
+    setItems((xs) => [...xs, { id, text, tone }]);
+    setTimeout(() => setItems((xs) => xs.filter((x) => x.id !== id)), 4200);
+  }, []);
+  return (
+    <ToastCtx.Provider value={push}>
+      {children}
+      <div className="toasts" role="status" aria-live="polite">
+        <AnimatePresence initial={false}>
+          {items.map((t) => (
+            <motion.div
+              key={t.id}
+              className={cx('toast', t.tone === 'error' && 'toast--error')}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {t.text}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </ToastCtx.Provider>
+  );
+}
+
+export function Bar({ value, label }) {
+  return (
+    <div className="bar" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value * 100)}>
+      <motion.span
+        className="bar__fill"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: value }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+      />
+    </div>
+  );
+}
+
+export function CountUp({ to }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const controls = animate(0, to, {
+      duration: 0.7,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (v) => {
+        if (ref.current) ref.current.textContent = Math.round(v);
+      },
+    });
+    return () => controls.stop();
+  }, [to]);
+  return <span ref={ref} className="num">0</span>;
+}
+
+export function Tabs({ items, value, onChange, label }) {
+  return (
+    <div className="tabs" role="group" aria-label={label}>
+      {items.map((it) => (
+        <button key={it.id} type="button" className="tab" aria-pressed={value === it.id} onClick={() => onChange(it.id)}>
+          {value === it.id && (
+            <motion.span layoutId="tab-ink" className="tab__ink" transition={{ type: 'spring', stiffness: 480, damping: 38 }} />
+          )}
+          {it.label}
+          <span className="tab__count num">{it.count}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function Empty({ title, children }) {
+  return (
+    <div className="empty">
+      <h2>{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+// Imagem guardada no IndexedDB. Enquanto carrega, mostra o esqueleto.
+export function Arte({ blobKey, alt = '', className }) {
+  const url = useBlobUrl(blobKey);
+  return (
+    <div className={cx('arte', className)}>
+      {url ? <img src={url} alt={alt} /> : <span className="skeleton" aria-hidden="true" />}
+    </div>
+  );
+}
+
+export function useNow(ms = 30000) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), ms);
+    return () => clearInterval(t);
+  }, [ms]);
+  return now;
+}
