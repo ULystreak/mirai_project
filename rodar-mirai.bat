@@ -8,13 +8,20 @@ title Mirai - site e link para amigos
 cd /d "%~dp0"
 
 set "PORTA=4173"
+if defined MIRAI_PORTA set "PORTA=%MIRAI_PORTA%"
 set "LOG_SITE=%TEMP%\mirai-site.log"
 set "LOG_LINK=%TEMP%\mirai-link.log"
 
-rem Teste interno da leitura do link: rodar-mirai.bat :extrai_link
+rem Testes internos das sub-rotinas: rodar-mirai.bat :extrai_link  ou  rodar-mirai.bat :link_responde
 if /i "%~1"==":extrai_link" (
   call :extrai_link
   echo LINK=!LINK!
+  endlocal
+  exit /b 0
+)
+if /i "%~1"==":link_responde" (
+  call :link_responde
+  echo RESPONDE=!RESPONDE!
   endlocal
   exit /b 0
 )
@@ -107,7 +114,7 @@ netstat -ano | findstr /r /c:":%PORTA% .*LISTENING" >nul 2>nul && goto site_ocup
 del "%LOG_SITE%" 2>nul
 del "%LOG_LINK%" 2>nul
 echo [..] Iniciando o site local...
-start "" /b cmd /c "npm run preview -- --host 127.0.0.1 --port %PORTA% --strictPort > "%LOG_SITE%" 2>&1"
+start "" /b cmd /c "npm run preview -- --host 127.0.0.1 --port %PORTA% --strictPort --bypass-lock > "%LOG_SITE%" 2>&1"
 
 set /a ESPERA=0
 :espera_site
@@ -135,11 +142,28 @@ start "" /b cmd /c "cloudflared tunnel --url http://127.0.0.1:%PORTA% > "%LOG_LI
 set /a ESPERA=0
 :espera_link
 call :extrai_link
-if defined LINK goto link_ok
+if defined LINK goto link_achado
 set /a ESPERA+=1
 if !ESPERA! GEQ 60 goto link_falhou
 ping -n 2 127.0.0.1 >nul
 goto espera_link
+
+:link_achado
+echo [OK] Link criado: %LINK%
+echo [..] Esperando o link responder pela internet. Pode levar um minuto...
+ipconfig /flushdns >nul 2>nul
+set /a ESPERA=0
+:espera_resposta
+call :link_responde
+if "!RESPONDE!"=="OK" goto link_ok
+set /a ESPERA+=1
+if !ESPERA! GEQ 40 goto link_sem_resposta
+ping -n 3 127.0.0.1 >nul
+goto espera_resposta
+
+:link_sem_resposta
+set "AVISO=1"
+goto link_ok
 
 :link_falhou
 echo [ERRO] Nao consegui criar o link da Cloudflare. Confira a internet e rode de novo.
@@ -150,7 +174,11 @@ goto fim_erro
 cls
 echo.
 echo ==========================================================
-echo   PRONTO. Copie o link abaixo e mande para seus amigos:
+if defined AVISO (
+  echo   O link foi criado, mas ainda nao respondeu. Espere um minuto e teste.
+) else (
+  echo   PRONTO. Copie o link abaixo e mande para seus amigos:
+)
 echo ==========================================================
 echo.
 echo %LINK%
@@ -191,4 +219,10 @@ rem ---- Sub-rotina: le o registro do tunel (mesmo com o arquivo aberto) e guard
 :extrai_link
 set "LINK="
 for /f "usebackq delims=" %%u in (`powershell -NoProfile -Command "$f=[IO.File]::Open('%LOG_LINK%','Open','Read','ReadWrite'); $r=New-Object IO.StreamReader($f); $t=$r.ReadToEnd(); $r.Close(); [regex]::Match($t,'https://[a-z0-9-]+\.trycloudflare\.com').Value" 2^>nul`) do set "LINK=%%u"
+exit /b 0
+
+rem ---- Sub-rotina: testa se o link responde com HTTP 200 e guarda OK em RESPONDE ----
+:link_responde
+set "RESPONDE="
+for /f "usebackq delims=" %%r in (`powershell -NoProfile -Command "try { if ((Invoke-WebRequest -Uri '%LINK%' -UseBasicParsing -TimeoutSec 10).StatusCode -eq 200) { 'OK' } } catch { }" 2^>nul`) do set "RESPONDE=%%r"
 exit /b 0
